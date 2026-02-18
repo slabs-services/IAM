@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { getPubKey } from "../../Utils.js";
+import { getPubKey } from "../Utils.js";
 
 export async function authMiddlewareServices(req, res) {
   if(req.host !== "trust.iam.slabs.pt"){

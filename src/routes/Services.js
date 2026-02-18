@@ -1,6 +1,6 @@
 import fs from "fs";
 import jwt from "jsonwebtoken";
-import { BYTELAKE_API, CLOUDFUNCTIONS_API } from "../../Utils.js";
+import { BYTELAKE_API, CLOUDFUNCTIONS_API } from "../Utils.js";
 
 const privateKey = fs.readFileSync("keys/priv.key", "utf8");
 
@@ -41,7 +41,7 @@ export async function GenerateTimedTokens(req, res) {
   const fsId = req.query.fsId;
   const expiresIn = req.query.expiresIn || 600;
 
-  if (!resourceName || !fsId) {
+  if (!fsId) {
     return res.status(400).send({ error: "Missing roleId or fsId query parameter" });
   }
 
@@ -63,6 +63,7 @@ export async function GenerateTimedTokens(req, res) {
   }
 
   const token = jwt.sign({
+    userId: req.userId,
     resourceName,
     fsId,
     singleTarget: true

@@ -1,4 +1,4 @@
-import { validateEmail } from "../../Utils.js";
+import { validateEmail } from "../Utils.js";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcrypt";
 import fs from "fs";
@@ -74,7 +74,7 @@ export async function ActivateOTP(req, reply) {
 
     const userData = await req.server.db.query("SELECT otp, otpEnable, isActive FROM accounts WHERE id = ?", [userId]);
 
-    const isValid = speakeasy.totp.verify({ secret: userData[0][0].otp, encoding: 'base32', token: code, window: 6 });
+    const isValid = speakeasy.totp.verify({ secret: userData[0][0].otp, encoding: 'base32', token: code });
 
     if(!isValid){
         return reply.code(401).send({ message: "Codigo OTP invalido." });
