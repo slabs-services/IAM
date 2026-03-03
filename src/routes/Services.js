@@ -92,7 +92,7 @@ export async function useTokenWithTRL(req, res) {
     const [trlInfo] = await req.server.db.query("SELECT usages FROM tokensRevoked WHERE tokenId = ?", [token]);
 
     if(trlInfo.length === 0){
-      await req.server.db.query("INSERT INTO tokensRevoked (tokenId, usages, createdAt, expiresAt) VALUES (?, ?, ?, ?)", [token, 1, new Date(), new Date(expiresAt*1000)]);
+      await req.server.db.query("INSERT INTO tokensRevoked (tokenId, usages, createdAt, expiresAt) VALUES (?, ?, ?, ?)", [token, 1, new Date(), new Date((expiresAt*1000)+10000)]);
 
       return { isAllowed: true };
     }else{
