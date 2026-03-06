@@ -1,7 +1,7 @@
 import Fastify from 'fastify';
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
-import { GenerateSTSToken, GenerateTimedTokens, useTokenWithTRL } from './routes/Services.js';
+import { GenerateSTSToken, GenerateTimedTokens } from './routes/Services.js';
 import { authMiddlewareServices, authMiddlewareUser } from './Middlewares/Auth.js';
 import { ActivateOTP, CreateAccount, GenerateOTP, Login } from './routes/User.js';
 dotenv.config();
@@ -22,7 +22,6 @@ fastify.post('/validateOTP', { preHandler: authMiddlewareUser }, ActivateOTP);
 fastify.post('/generateOTP', { preHandler: authMiddlewareUser }, GenerateOTP);
 fastify.post('/login', Login);
 fastify.get('/getSTS', { preHandler: authMiddlewareServices }, GenerateSTSToken);
-fastify.get('/timedTokens', { preHandler: authMiddlewareUser }, GenerateTimedTokens);
-fastify.get('/useTokenWithTRL', { preHandler: authMiddlewareServices }, useTokenWithTRL);
+fastify.post('/timedTokens', { preHandler: authMiddlewareUser }, GenerateTimedTokens);
 
 await fastify.listen({ host: '127.0.0.1', port: 8080 });

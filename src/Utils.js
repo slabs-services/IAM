@@ -1,6 +1,3 @@
-export const BYTELAKE_API = "http://storage.bytelake.slabs.pt";
-export const CLOUDFUNCTIONS_API = "http://scheduler.cloudfunctions.slabs.pt";
-
 export function validateEmail(email) {
     let atIndex = email.indexOf("@");
     if (atIndex < 1 || atIndex !== email.lastIndexOf("@")){
