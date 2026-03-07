@@ -23,5 +23,6 @@ fastify.post('/generateOTP', { preHandler: authMiddlewareUser }, GenerateOTP);
 fastify.post('/login', Login);
 fastify.get('/getSTS', { preHandler: authMiddlewareServices }, GenerateSTSToken);
 fastify.post('/timedTokens', { preHandler: authMiddlewareUser }, GenerateTimedTokens);
+fastify.post('/timedTokensServices', { preHandler: authMiddlewareServices }, GenerateTimedTokens);
 
 await fastify.listen({ host: '127.0.0.1', port: 8080 });

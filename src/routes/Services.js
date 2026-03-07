@@ -92,5 +92,5 @@ export async function GenerateTimedTokens(req, res) {
     expiresIn: expiresIn + "s",
   });
 
-  return res.send({ token });
+  return { token };
 }

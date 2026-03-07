@@ -22,9 +22,11 @@ export async function authMiddlewareServices(req, res) {
 
     const pubKey = await fetch("http://iam-keys.lake.tryspacelabs.pt/" + keyInfo[0][0].pubKey).then(res => res.text());
 
-    jwt.verify(token, pubKey, {
+    const decodedToken = jwt.verify(token, pubKey, {
       algorithms: ["RS256"],
     });
+
+    req.userId = decodedToken.userId;
   } catch (err) {
     console.error("Authentication error:", err);
     return res.status(401).send({ error: "Invalid or expired token" });
