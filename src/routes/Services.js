@@ -17,7 +17,7 @@ export async function GenerateSTSToken(req, res) {
   }
 
   const [roleInfo] = await req.server.db.query(
-    "SELECT fsId, targetURN FROM roleFS WHERE roleId = ? AND isActive = 1",
+    "SELECT fsId, targetURN, roleFsExtras.name, roleFsExtras.value FROM roleFS LEFT JOIN roleFsExtras ON roleFS.id = roleFsExtras.roleFsId WHERE roleId = ? AND isActive = 1",
     [roleId]
   );
 
@@ -25,8 +25,31 @@ export async function GenerateSTSToken(req, res) {
     return res.status(404).send({ error: "Role not found" });
   }
 
+  const groupedRolesMap = new Map();
+
+  for (const row of rows) {
+    const key = `${row.fsId}|${row.targetURN}`;
+
+    if (!groupedRolesMap.has(key)) {
+      groupedRolesMap.set(key, {
+        fsId: row.fsId,
+        targetURN: row.targetURN,
+        extras: []
+      });
+    }
+
+    if (row.name !== null) {
+      groupedRolesMap.get(key).extras.push({
+        name: row.name,
+        value: row.value
+      });
+    }
+  }
+
+  const roles = Array.from(groupedRolesMap.values());
+
   const token = jwt.sign({
-    roles: roleInfo,
+    roles,
     singleTarget: false
   }, privateKey, {
     algorithm: "RS256",
