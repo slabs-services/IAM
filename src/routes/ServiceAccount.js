@@ -3,38 +3,44 @@ import jwt from "jsonwebtoken";
 import { privateKey } from "../Utils.js";
 
 export async function LoginSA(req, reply) {
-    const username = req.body?.username.trim();
-    const password = req.body?.password ?? "";
+    const auth = req.headers.authorization;
 
-    if (typeof password !== "string" || password.length < 8) {
-        return reply.code(401).send({ message: "Email ou password invalidos." });
+    if (!auth || !auth.startsWith("Basic ")) {
+        reply.header("WWW-Authenticate", 'Basic realm="Service Account"').code(401);
+        return { message: "Authentication required." };
+    }
+
+    const decodedAuth = Buffer.from(auth.split(" ")[1], "base64").toString("utf-8");
+    const [username, password] = decodedAuth.split(":");
+
+    if (!username || !password) {
+        reply.header("WWW-Authenticate", 'Basic realm="Service Account"').code(401);
+        return { message: "Missing username or password." };
     }
 
     const [rows] = await req.server.db.query(
-        "SELECT id, password FROM serviceaccount WHERE email = ? AND isActive = 1 LIMIT 1",
+        "SELECT accountId, password FROM serviceaccount WHERE username = ? AND isActive = 1 LIMIT 1",
         [username]
     );
 
     if (rows.length === 0) {
-        return reply.code(401).send({ message: "Email ou password invalidos." });
+        reply.header("WWW-Authenticate", 'Basic realm="Service Account"').code(401);
+        return { message: "Invalid service account." };
     }
 
     const isPasswordValid = await bcrypt.compare(password, rows[0].password);
 
-    if(!isPasswordValid){
-        return reply.code(401).send({ message: "Email ou password invalidos." });
+    if (!isPasswordValid) {
+        reply.header("WWW-Authenticate", 'Basic realm="Service Account"').code(401);
+        return { message: "Username or password invalid." };
     }
 
     const token = jwt.sign({
-        userId: rows[0].id, // ver isto hoje
-        isLimited: true
+        userId: rows[0].accountId
     }, privateKey, {
         algorithm: "RS256",
-        expiresIn: "5m"
+        expiresIn: "5h"
     });
 
-    return {
-        token,
-        redirectToOTP: !rows[0].otpEnable
-    }
+    return { token };
 }

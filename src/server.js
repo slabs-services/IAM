@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { GenerateSTSToken, GenerateTimedTokens } from './routes/Services.js';
 import { authMiddlewareServices, authMiddlewareUser } from './Middlewares/Auth.js';
 import { ActivateOTP, CreateAccount, GenerateOTP, Login } from './routes/User.js';
+import { LoginSA } from './routes/ServiceAccount.js';
 dotenv.config();
 
 const fastify = Fastify();
@@ -21,6 +22,7 @@ fastify.post('/createAccount', CreateAccount);
 fastify.post('/validateOTP', { preHandler: authMiddlewareUser }, ActivateOTP);
 fastify.post('/generateOTP', { preHandler: authMiddlewareUser }, GenerateOTP);
 fastify.post('/login', Login);
+fastify.get('/loginSA', LoginSA);
 fastify.get('/getSTS', { preHandler: authMiddlewareServices }, GenerateSTSToken);
 fastify.post('/timedTokens', { preHandler: authMiddlewareUser }, GenerateTimedTokens);
 fastify.post('/timedTokensServices', { preHandler: authMiddlewareServices }, GenerateTimedTokens);
