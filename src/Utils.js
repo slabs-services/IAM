@@ -1,3 +1,5 @@
+import fs from "fs";
+
 export function validateEmail(email) {
     let atIndex = email.indexOf("@");
     if (atIndex < 1 || atIndex !== email.lastIndexOf("@")){
@@ -29,3 +31,5 @@ export async function getPubKey() {
   cachedKey = await res.text();
   return cachedKey;
 }
+
+export const privateKey = fs.readFileSync("keys/priv-login.key", "utf8");

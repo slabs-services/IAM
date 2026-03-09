@@ -1,24 +1,27 @@
-import fs from "fs";
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
-
-const privateKey = fs.readFileSync("keys/priv.key", "utf8");
+import { privateKey } from "../Utils.js";
 
 export async function GenerateSTSToken(req, res) {
-  const roleId = req.query.roleId;
+  const sourceId = req.query.sourceId;
   const expiresIn = req.query.expiresIn || 600;
+  const source = req.query.source;
+
+  if(source !== "role" && source !== "serviceaccount"){
+    return res.status(400).send({ error: "Invalid source system" });
+  }
 
   if(expiresIn > 1800) {
     return res.status(400).send({ error: "expiresIn cannot be greater than 30 minutes" });
   }
 
-  if (!roleId) {
-    return res.status(400).send({ error: "Missing roleId query parameter" });
+  if (!sourceId) {
+    return res.status(400).send({ error: "Missing sourceId query parameter" });
   }
 
   const [roleInfo] = await req.server.db.query(
-    "SELECT fsId, targetURN, roleFsExtras.name, roleFsExtras.value FROM roleFS LEFT JOIN roleFsExtras ON roleFS.id = roleFsExtras.roleFsId WHERE roleId = ? AND isActive = 1",
-    [roleId]
+    "SELECT fsId, targetURN, roleFsExtras.name, roleFsExtras.value FROM associatedFS LEFT JOIN roleFsExtras ON associatedFS.id = roleFsExtras.roleFsId WHERE sourceId = ? AND isActive = 1 AND source = ?",
+    [sourceId, source]
   );
 
   if (roleInfo.length === 0) {
@@ -27,7 +30,7 @@ export async function GenerateSTSToken(req, res) {
 
   const groupedRolesMap = new Map();
 
-  for (const row of rows) {
+  for (const row of roleInfo) {
     const key = `${row.fsId}|${row.targetURN}`;
 
     if (!groupedRolesMap.has(key)) {
@@ -66,7 +69,7 @@ export async function GenerateTimedTokens(req, res) {
   const extras = req.body.extras || {};
 
   if (!fsId) {
-    return res.status(400).send({ error: "Missing roleId or fsId query parameter" });
+    return res.status(400).send({ error: "Missing fsId query parameter" });
   }
 
   const [fsGroups] = await req.server.db.query("SELECT fsGroupId, ownerEndpoint FROM fs INNER JOIN fsGroup ON fs.fsGroupId = fsGroup.id WHERE fs.id = ?", [fsId]);
